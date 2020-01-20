@@ -125,7 +125,8 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
-    category = models.ForeignKey('Category', verbose_name='Категория', related_name='products', blank=True, on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', verbose_name='Категория', related_name='products', blank=True,
+                                 on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'Продукт'
@@ -138,8 +139,10 @@ class Product(models.Model):
 
 class ProductInfo(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
-    product  = models.ForeignKey('Product', verbose_name='Продукт', related_name='product_infos', blank=True, on_delete=models.CASCADE)
-    shop  = models.ForeignKey('Shop', verbose_name='Магазин', related_name='product_infos', blank=True, on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', verbose_name='Продукт', related_name='product_infos', blank=True,
+                                on_delete=models.CASCADE)
+    shop = models.ForeignKey('Shop', verbose_name='Магазин', related_name='product_infos', blank=True,
+                             on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(verbose_name='Количество')
     price = models.PositiveIntegerField(verbose_name='Цена')
     price_rrc = models.PositiveIntegerField(verbose_name='Рекомендуемая розничная цена')
@@ -162,8 +165,10 @@ class Parameter(models.Model):
 
 
 class ProductParameter(models.Model):
-    product_info = models.ForeignKey('ProductInfo', verbose_name='Информация о продукте', related_name='product_parameters', blank=True, on_delete=models.CASCADE)
-    parameter = models.ForeignKey('Parameter', verbose_name='Параметр', related_name='product_parameters', blank=True, on_delete=models.CASCADE)
+    product_info = models.ForeignKey('ProductInfo', verbose_name='Информация о продукте',
+                                     related_name='product_parameters', blank=True, on_delete=models.CASCADE)
+    parameter = models.ForeignKey('Parameter', verbose_name='Параметр', related_name='product_parameters', blank=True,
+                                  on_delete=models.CASCADE)
     value = models.CharField(verbose_name='Значение', max_length=100)
 
     class Meta:
@@ -172,7 +177,8 @@ class ProductParameter(models.Model):
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User, verbose_name='Пользователь', related_name='orders', blank=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, verbose_name='Пользователь', related_name='orders', blank=True,
+                             on_delete=models.CASCADE)
     dt = models.DateTimeField(auto_now_add=True)
     status = models.CharField(verbose_name='Статус', choices=STATE_CHOICES, max_length=15)
 
@@ -186,9 +192,12 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey('Order', verbose_name='Заказ', related_name='ordered_items', blank=True, on_delete=models.CASCADE)
-    product  = models.ForeignKey('Product', verbose_name='Продукт', related_name='ordered_items', blank=True, on_delete=models.CASCADE)
-    shop  = models.ForeignKey('Shop', verbose_name='Магазин', related_name='ordered_items', blank=True, on_delete=models.CASCADE)
+    order = models.ForeignKey('Order', verbose_name='Заказ', related_name='ordered_items', blank=True,
+                              on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', verbose_name='Продукт', related_name='ordered_items', blank=True,
+                                on_delete=models.CASCADE)
+    shop = models.ForeignKey('Shop', verbose_name='Магазин', related_name='ordered_items', blank=True,
+                             on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(verbose_name='Количество')
 
     class Meta:
@@ -198,7 +207,8 @@ class OrderItem(models.Model):
 
 class Contact(models.Model):
     type = models.CharField(verbose_name='Тип', max_length=50)
-    user = models.ForeignKey(User, verbose_name='Пользователь', related_name='contacts', blank=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, verbose_name='Пользователь', related_name='contacts', blank=True,
+                             on_delete=models.CASCADE)
     value = models.CharField(verbose_name='Значение', max_length=50)
 
     class Meta:
