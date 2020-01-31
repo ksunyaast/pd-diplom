@@ -179,6 +179,7 @@ class Product(models.Model):
 
 
 class ProductInfo(models.Model):
+    external_id = models.PositiveIntegerField(verbose_name='Внешний ИД', default=1)
     name = models.CharField(max_length=256, verbose_name='Название')
     product = models.ForeignKey('Product', verbose_name='Продукт', related_name='product_infos', blank=True,
                                 on_delete=models.CASCADE)

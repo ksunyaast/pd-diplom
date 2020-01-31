@@ -14,9 +14,10 @@ from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
 
 # Create your views here.
-from backend.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter
+from backend.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, ConfirmEmailToken
 
-from backend.serializers import ShopSerializer, CategorySerializer, UserSerializer
+from backend.serializers import ShopSerializer, CategorySerializer, UserSerializer, ProductSerializer,\
+    ProductInfoSerializer
 
 
 # Регистрация
@@ -110,7 +111,8 @@ class PartnerUpdate(APIView):
                     product_item, _ = Product.objects.get_or_create(name=product['name'],
                                                                     category=product_category)
                     product_item.save()
-                    product_info = ProductInfo.objects.create(name=product['name'],
+                    product_info = ProductInfo.objects.create(external_id=product['id'],
+                                                              name=product['name'],
                                                               product=product_item,
                                                               shop=shop,
                                                               quantity=int(product['quantity']),
@@ -135,6 +137,20 @@ class ShopView(ListAPIView):
 class CategoryView(ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+
+# Список товаров
+class ProductView(ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+# Просмотр карточки товара
+class ProductInfoView(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = ProductInfo.objects.get(external_id=int(request.data['id']))
+        serializer = ProductInfoSerializer(queryset)
+        return Response(serializer.data)
 
 
 
