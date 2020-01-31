@@ -100,6 +100,7 @@ class Shop(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     url = models.URLField(verbose_name='Ссылка', null=True, blank=True)
     filename = models.CharField(max_length=256, verbose_name='Имя файла')
+    state = models.BooleanField(verbose_name='Статус получения заказов', default=True)
 
     class Meta:
         verbose_name = 'Магазин'

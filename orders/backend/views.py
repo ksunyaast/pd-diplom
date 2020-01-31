@@ -1,9 +1,13 @@
 import json
 
+from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import JsonResponse
 from requests import get
+from rest_framework.authtoken.models import Token
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
@@ -11,15 +15,49 @@ from yaml import load as load_yaml, Loader
 # Create your views here.
 from backend.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter
 
+from backend.serializers import ShopSerializer, CategorySerializer, UserSerializer
+
 
 class RegisterAccount(APIView):
-    pass
+    def post(self, request, *args, **kwargs):
+        if {'first_name', 'last_name', 'email', 'password', 'company', 'position'}.issubset(request.data):
+            errors = {}
+            try:
+                validate_password(request.data['password'])
+            except Exception as password_error:
+                error_array = []
+                for item in password_error:
+                    error_array.append(item)
+                return JsonResponse({'Status': False, 'Errors': {'password': error_array}})
+            else:
+                request.data._mutable = True
+                request.data.update({})
+                user_serializer = UserSerializer(data=request.data)
+                if user_serializer.is_valid():
+                    user = user_serializer.save()
+                    user.set_password(request.data['password'])
+                    user.save()
+                    return JsonResponse({'Status': True})
+                else:
+                    return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
+
+        return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
 class LoginAccount(APIView):
-   pass
+    def post(self, request, *args, **kwargs):
+        if {'email', 'password'}.issubset(request.data):
+            user = authenticate(request, username=request.data['email'], password=request.data['password'])
+            if user is not None:
+                if user.is_active:
+                    token, _ = Token.objects.get_or_create(user=user)
+                    return JsonResponse({'Status': True, 'Token': token.key})
+            return JsonResponse({'Status': False, 'Errors': 'Не удалось авторизовать'})
+        return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
+
+# Обновление прайса
 class PartnerUpdate(APIView):
     def post(self, request, *args, **kwargs):
         # if not request.user.is_authenticated:
@@ -59,3 +97,15 @@ class PartnerUpdate(APIView):
                                                         value=value)
                 return JsonResponse({'Status': True})
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
+
+
+# Просмотр магазинов
+class ShopView(ListAPIView):
+    queryset = Shop.objects.filter(state=True)
+    serializer_class = ShopSerializer
+
+
+# Просмотр категорий
+class CategoryView(ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
