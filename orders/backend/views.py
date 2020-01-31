@@ -1,5 +1,6 @@
 import json
 
+from django.contrib import auth
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -18,10 +19,10 @@ from backend.models import Shop, Category, Product, ProductInfo, Parameter, Prod
 from backend.serializers import ShopSerializer, CategorySerializer, UserSerializer
 
 
+# Регистрация
 class RegisterAccount(APIView):
     def post(self, request, *args, **kwargs):
         if {'first_name', 'last_name', 'email', 'password', 'company', 'position'}.issubset(request.data):
-            errors = {}
             try:
                 validate_password(request.data['password'])
             except Exception as password_error:
@@ -44,14 +45,37 @@ class RegisterAccount(APIView):
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
+class ConfirmAccount(APIView):
+    """
+    Класс для подтверждения почтового адреса
+    """
+    # Регистрация методом POST
+    def post(self, request, *args, **kwargs):
+
+        # проверяем обязательные аргументы
+        if {'email', 'token'}.issubset(request.data):
+
+            token = ConfirmEmailToken.objects.filter(user__email=request.data['email'],
+                                                     key=request.data['token']).first()
+            if token:
+                token.user.is_active = True
+                token.user.save()
+                token.delete()
+                return JsonResponse({'Status': True})
+            else:
+                return JsonResponse({'Status': False, 'Errors': 'Неправильно указан токен или email'})
+
+        return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
+
+
+#Авторизация
 class LoginAccount(APIView):
     def post(self, request, *args, **kwargs):
         if {'email', 'password'}.issubset(request.data):
-            user = authenticate(request, username=request.data['email'], password=request.data['password'])
-            if user is not None:
-                if user.is_active:
-                    token, _ = Token.objects.get_or_create(user=user)
-                    return JsonResponse({'Status': True, 'Token': token.key})
+            user = authenticate(username=request.data['email'], password=request.data['password'])
+            if user is not None and user.is_active:
+                auth.login(request, user)
+                return JsonResponse({'Status': True})
             return JsonResponse({'Status': False, 'Errors': 'Не удалось авторизовать'})
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
@@ -61,7 +85,9 @@ class LoginAccount(APIView):
 class PartnerUpdate(APIView):
     def post(self, request, *args, **kwargs):
         # if not request.user.is_authenticated:
-        #     return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
+        #     return JsonResponse({'Status': False, 'Error': 'Необходимо авторизоваться'}, status=403)
+        # if request.user.type != 'shop':
+        #     return JsonResponse({'Status': False, 'Error': 'Только для магазинов'}, status=403)
         file = request.data['file']
         if file:
             validate_url = URLValidator()
@@ -82,7 +108,7 @@ class PartnerUpdate(APIView):
                 for product in data['goods']:
                     product_category = Category.objects.get(id=product['category'])
                     product_item, _ = Product.objects.get_or_create(name=product['name'],
-                                                                 category=product_category)
+                                                                    category=product_category)
                     product_item.save()
                     product_info = ProductInfo.objects.create(name=product['name'],
                                                               product=product_item,
@@ -109,3 +135,16 @@ class ShopView(ListAPIView):
 class CategoryView(ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+
+
+class PartnerState(APIView):
+    def get(self, request, *args, **kwargs):
+        # if not request.user.is_authenticated:
+        #     return JsonResponse({'Status': False, 'Error': 'Необходимо авторизоваться'}, status=403)
+        # if request.user.type != 'shop':
+        #     return JsonResponse({'Status': False, 'Error': 'Только для магазинов'}, status=403)
+
+        shop = request.user.shop
+        serializer = ShopSerializer(shop)
+        return Response(serializer.data)

@@ -3,3 +3,4 @@ pytz==2018.5
 djangorestframework
 pyyaml
 requests
+django-rest-passwordreset
