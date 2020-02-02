@@ -73,12 +73,16 @@ class ConfirmAccount(APIView):
 class LoginAccount(APIView):
     def post(self, request, *args, **kwargs):
         if {'email', 'password'}.issubset(request.data):
-            user = authenticate(username=request.data['email'], password=request.data['password'])
-            if user is not None and user.is_active:
-                auth.login(request, user)
-                return JsonResponse({'Status': True})
-            return JsonResponse({'Status': False, 'Errors': 'Не удалось авторизовать'})
-        return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
+            user = authenticate(request, username=request.data['email'], password=request.data['password'])
+            print(user)
+            if user is not None:
+                token_query = Token.objects.filter(user=user.pk)
+                if token_query.exists():
+                    key = token_query.values_list('key', flat=True).get()
+                else:
+                    key = Token.objects.create(user=user).key
+                return JsonResponse({'Status': True, 'Token': key})
+        return JsonResponse({'Status': False, 'Login': 'Failed'}, status=400)
 
 
 

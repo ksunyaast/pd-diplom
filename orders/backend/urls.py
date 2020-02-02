@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 
-from backend.views import PartnerUpdate, RegisterAccount, LoginAccount, ShopView, CategoryView, ProductView,\
-    ProductInfoView
+from backend.views import PartnerUpdate, RegisterAccount, ConfirmAccount, LoginAccount, ShopView, CategoryView,\
+    ProductView, ProductInfoView
 
 urlpatterns = [
     path('partner/update', PartnerUpdate.as_view(), name='partner-update'),
@@ -11,5 +11,6 @@ urlpatterns = [
     path('products', ProductView.as_view(), name='product-view'),
     path('product-info', ProductInfoView.as_view(), name='product_info-view'),
     path('user/register', RegisterAccount.as_view(), name='user-register'),
+    path('user/register/confirm', ConfirmAccount.as_view(), name='user-register-confirm'),
     path('user/login', LoginAccount.as_view(), name='user-login'),
 ]
