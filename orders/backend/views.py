@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import JsonResponse
 from requests import get
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -22,6 +23,7 @@ from backend.serializers import ShopSerializer, CategorySerializer, UserSerializ
 
 # Регистрация
 class RegisterAccount(APIView):
+
     def post(self, request, *args, **kwargs):
         if {'first_name', 'last_name', 'email', 'password', 'company', 'position'}.issubset(request.data):
             try:
@@ -71,8 +73,11 @@ class ConfirmAccount(APIView):
 
 #Авторизация
 class LoginAccount(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+
     def post(self, request, *args, **kwargs):
         if {'email', 'password'}.issubset(request.data):
+
             user = authenticate(request, username=request.data['email'], password=request.data['password'])
             print(user)
             if user is not None:
