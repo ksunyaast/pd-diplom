@@ -10,6 +10,7 @@ from requests import get
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
@@ -73,7 +74,8 @@ class ConfirmAccount(APIView):
 
 #Авторизация
 class LoginAccount(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    # authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         if {'email', 'password'}.issubset(request.data):
