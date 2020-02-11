@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import JsonResponse
 from requests import get
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny
@@ -74,13 +74,12 @@ class ConfirmAccount(APIView):
 
 #Авторизация
 class LoginAccount(APIView):
-    # authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = [SessionAuthentication, BasicAuthentication, TokenAuthentication]
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         if {'email', 'password'}.issubset(request.data):
-
-            user = authenticate(request, username=request.data['email'], password=request.data['password'])
+            user = authenticate(username=request.data['email'], password=request.data['password'])
             print(user)
             if user is not None:
                 token_query = Token.objects.filter(user=user.pk)
