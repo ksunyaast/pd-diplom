@@ -24,6 +24,7 @@ from backend.serializers import ShopSerializer, CategorySerializer, UserSerializ
 
 # Регистрация
 class RegisterAccount(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         if {'first_name', 'last_name', 'email', 'password', 'company', 'position'}.issubset(request.data):
