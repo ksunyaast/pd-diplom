@@ -46,19 +46,24 @@ class ProductParameterSerializer(serializers.ModelSerializer):
         fields = ('id', 'product_info', 'parameter', 'value',)
 
 
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ('id', 'type', 'user', 'value',)
+
+
 class OrderSerializer(serializers.ModelSerializer):
+    contact = ContactSerializer(read_only=True)
+
     class Meta:
         model = Order
-        fields = ('id', 'user', 'dt', 'status', 'ordered_items',)
+        fields = ('id', 'user', 'dt', 'status', 'ordered_items', 'contact')
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ('id', 'order', 'product', 'shop', 'quantity',)
-
-
-class ContactSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Contact
-        fields = ('id', 'type', 'user', 'value',)
+        extra_kwargs = {
+            'order': {'write_only': True}
+        }
