@@ -7,6 +7,7 @@ from backend.views import PartnerUpdate, RegisterAccount, ConfirmAccount, LoginA
     # ProductView, ProductInfoView
 
 router = DefaultRouter()
+router.register(r'products-viewset', ProductViewSet, basename='user')
 
 
 urlpatterns = [
@@ -15,8 +16,7 @@ urlpatterns = [
     path('category', CategoryView.as_view(), name='category-view'),
     # path('products', ProductView.as_view(), name='product-view'),
     # path('product-info', ProductInfoView.as_view(), name='product_info-view'),
-    path('products-viewset/', ProductViewSet.as_view({'get': 'list'})),
-    path('products-viewset/<int:pk>', ProductViewSet.as_view({'get': 'retrieve'})),
+    path('', include(router.urls)),
     path('user/register', RegisterAccount.as_view(), name='user-register'),
     path('user/register/confirm', ConfirmAccount.as_view(), name='user-register-confirm'),
     path('user/login', LoginAccount.as_view(), name='user-login'),
