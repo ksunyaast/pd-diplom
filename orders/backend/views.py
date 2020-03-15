@@ -7,6 +7,7 @@ from django.core.validators import URLValidator
 from django.db import IntegrityError
 from django.db.models import Sum, F, Q
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from requests import get
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -15,6 +16,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
+from rest_framework import viewsets
 
 # Create your views here.
 from backend.models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, ConfirmEmailToken,\
@@ -153,17 +155,30 @@ class CategoryView(ListAPIView):
 
 
 # Список товаров
-class ProductView(ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+# class ProductView(ListAPIView):
+#     queryset = Product.objects.all()
+#     serializer_class = ProductSerializer
 
 
 # Просмотр карточки товара
-class ProductInfoView(APIView):
+# class ProductInfoView(APIView):
+#
+#     def get(self, request, *args, **kwargs):
+#         queryset = ProductInfo.objects.get(external_id=int(request.data['id']))
+#         serializer = ProductInfoSerializer(queryset)
+#         return Response(serializer.data)
 
-    def get(self, request, *args, **kwargs):
-        queryset = ProductInfo.objects.get(external_id=int(request.data['id']))
-        serializer = ProductInfoSerializer(queryset)
+class ProductViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = Product.objects.all()
+        serializer = ProductSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        queryset = ProductInfo.objects.all()
+        product = get_object_or_404(queryset, external_id=pk)
+        # queryset = ProductInfo.objects.get(external_id=int(request.data['id']))
+        serializer = ProductInfoSerializer(product)
         return Response(serializer.data)
 
 
@@ -311,6 +326,7 @@ class ContactView(APIView):
                         JsonResponse({'Status': False, 'Errors': serializer.errors})
 
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
+
 
 
 # Просмотр заказа
